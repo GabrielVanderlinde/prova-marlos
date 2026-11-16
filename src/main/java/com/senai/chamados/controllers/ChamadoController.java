@@ -7,7 +7,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -23,10 +22,7 @@ public class ChamadoController {
     @GetMapping
     public String listar(Model model) {
 
-        // TODO AVALIACAO C1:
-        // Obter a lista de chamados pelo Service.
-
-        List<ChamadoDto> lista = new ArrayList<>();
+        List<ChamadoDto> lista = service.obter();
 
         model.addAttribute("chamados", lista);
 
@@ -50,8 +46,7 @@ public class ChamadoController {
             Model model) {
 
         // TODO AVALIACAO C3:
-        // Cadastrar chamado utilizando o Service.
-
+        service.cadastrar(dto);
         return "redirect:/chamados";
     }
 
@@ -63,13 +58,10 @@ public class ChamadoController {
         // TODO AVALIACAO C4:
         // Buscar chamado pelo ID utilizando o Service.
 
-        ChamadoDto dto = new ChamadoDto();
-
-        // Dados ficticios apenas para visualizar a tela.
-        dto.setId(id);
-        dto.setTitulo("Chamado de exemplo");
-        dto.setDescricao("Descricao de exemplo");
-        dto.setStatus("ABERTO");
+        ChamadoDto dto = service.buscar(id);
+        if (dto == null) {
+            return "redirect:/chamados";
+        }
 
         model.addAttribute("chamado", dto);
 
@@ -79,20 +71,23 @@ public class ChamadoController {
     @PostMapping("/atualizar/{id}")
     public String atualizar(
             @PathVariable Long id,
-            @ModelAttribute("chamado") ChamadoDto dto) {
+            @ModelAttribute("chamado") ChamadoDto dto,
+            Model model) {
 
         // TODO AVALIACAO C5:
-        // Atualizar chamado utilizando o Service.
+        if (service.atualizar(id, dto)) {
+            return "redirect:/chamados";
+        }
 
-        return "redirect:/chamados";
+        model.addAttribute("erro", "Dados inválidos ou chamado inexistente.");
+        return "chamados/form";
     }
 
     @PostMapping("/excluir/{id}")
     public String excluir(@PathVariable Long id) {
 
         // TODO AVALIACAO C6:
-        // Excluir chamado utilizando o Service.
-
+        service.excluir(id);
         return "redirect:/chamados";
     }
 }
